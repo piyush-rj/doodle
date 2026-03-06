@@ -1,0 +1,17 @@
+export const WORD_LIST = [
+    'apple',
+    'banana',
+    'car',
+    'tree',
+    'house',
+    'cat',
+    'dog',
+    'guitar',
+    'phone',
+    'rocket',
+    'pizza',
+    'sun',
+    'moon',
+    'mountain',
+    'river',
+];
