@@ -4,4 +4,6 @@ export interface CustomWebSocket extends WebSocket {
     id: string;
     roomId?: string;
     username?: string;
+    lastGuessTime?: number;
+    lastDrawTime?: number;
 }

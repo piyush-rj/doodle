@@ -1,9 +1,12 @@
 import { ROOM_STATE, type Player, type Room, type Stroke } from '@doodle/types';
 import { v4 as uuid } from 'uuid';
-import { WORD_LIST } from '../../utils/words';
+import { WORD_LIST } from '../utils/words';
 
 export default class RoomManager {
     private roomsMapping: Map<string, Room>;
+
+    private readonly MAX_DRAW_HISTORY = 500;
+    private readonly MAX_PLAYERS = 8;
 
     constructor() {
         this.roomsMapping = new Map();
@@ -41,22 +44,23 @@ export default class RoomManager {
         const room = this.roomsMapping.get(roomId);
         if (!room) return;
 
+        if (room.players.size >= this.MAX_PLAYERS) return;
+
         room.players.set(player.id, player);
         return room;
     }
 
     getRoom(roomId: string): Room | undefined {
-        if (!roomId) return undefined;
+        if (!roomId) return;
         return this.roomsMapping.get(roomId);
     }
 
     leaveRoom(playerId: string, roomId: string): boolean {
-        if (!playerId || !roomId) return false;
-
         const room = this.roomsMapping.get(roomId);
         if (!room) return false;
 
         room.players.delete(playerId);
+
         if (room.players.size === 0) {
             this.roomsMapping.delete(roomId);
             return true;
@@ -64,70 +68,60 @@ export default class RoomManager {
 
         if (room.hostId === playerId) {
             const nextHost = room.players.keys().next().value;
-            room.hostId = nextHost!;
+            if (nextHost) room.hostId = nextHost;
         }
-        return true;
+
+        if (room.drawerId === playerId) {
+            room.drawerId = null;
+        }
+
+        return false;
     }
 
-    startGame(roomId: string, playerId: string) {
+    startGame(roomId: string, playerId: string): Room | undefined {
         const room = this.roomsMapping.get(roomId);
-        if (!room) {
-            console.error('No room found for the given id');
-            return;
-        }
+        if (!room) return;
 
-        if (room.hostId !== playerId) {
-            console.error('only hosts can start the game');
-            return;
-        }
+        if (room.hostId !== playerId) return;
 
-        if (room.state !== ROOM_STATE.WAITING) {
-            console.error('Game is already in progress');
-            return;
-        }
+        if (room.state !== ROOM_STATE.WAITING) return;
 
         const playerIds = Array.from(room.players.keys());
-        if (playerIds.length < 2) {
-            console.error('Need atleast 2 players to start the game');
-            return;
-        }
+
+        if (playerIds.length < 2) return;
 
         room.drawerQueue = playerIds;
         room.currentDrawerIndex = 0;
+
         room.drawerId = playerIds[0]!;
         room.round = 1;
         room.state = ROOM_STATE.WORD_SELECTION;
 
+        room.word = null;
+        room.drawingHistory = [];
         room.guessedPlayers.clear();
+
         room.wordOptions = this.getRandomWords(3);
+
         return room;
     }
 
-    selectWord(roomId: string, playerId: string, word: string) {
+    selectWord(roomId: string, playerId: string, word: string): Room | undefined {
         const room = this.roomsMapping.get(roomId);
-        if (!room) {
-            console.error('Invalid room id');
-            return;
-        }
+        if (!room) return;
 
-        if (room.state !== ROOM_STATE.WORD_SELECTION) {
-            console.error('Not in word selection state');
-            return;
-        }
+        if (room.state !== ROOM_STATE.WORD_SELECTION) return;
 
-        if (playerId !== room.drawerId) {
-            console.error('You are not the drawer');
-            return;
-        }
+        if (room.drawerId !== playerId) return;
 
-        if (!room.wordOptions.includes(word)) {
-            console.error('Inalid word selected');
-            return;
-        }
+        if (!room.wordOptions.includes(word)) return;
 
         room.word = word;
+
         room.state = ROOM_STATE.DRAWING;
+
         room.roundStartTime = Date.now();
+
         room.wordOptions = [];
         room.drawingHistory = [];
         room.guessedPlayers.clear();
@@ -135,24 +129,20 @@ export default class RoomManager {
         return room;
     }
 
-    drawStroke(roomId: string, playerId: string, stroke: Stroke) {
+    drawStroke(roomId: string, playerId: string, stroke: Stroke): Room | undefined {
         const room = this.roomsMapping.get(roomId);
-        if (!room) {
-            console.error('Room doesnt exist for the given id');
-            return;
-        }
+        if (!room) return;
 
-        if (room.state !== ROOM_STATE.DRAWING) {
-            console.error('Not in drawing state');
-            return;
-        }
+        if (room.state !== ROOM_STATE.DRAWING) return;
 
-        if (room.drawerId !== playerId) {
-            console.error('You are not the drawer');
-            return;
-        }
+        if (room.drawerId !== playerId) return;
 
         room.drawingHistory.push(stroke);
+
+        if (room.drawingHistory.length > this.MAX_DRAW_HISTORY) {
+            room.drawingHistory.shift();
+        }
+
         return room;
     }
 
@@ -166,10 +156,12 @@ export default class RoomManager {
 
         if (room.guessedPlayers.has(playerId)) return;
 
+        if (!guess) return;
+
         const normalizedGuess = guess.trim().toLowerCase();
         const normalizedWord = room.word?.toLowerCase();
 
-        let correct: boolean = false;
+        let correct = false;
         let score = 0;
         let roundEnded = false;
         let gameEnded = false;
@@ -226,22 +218,27 @@ export default class RoomManager {
 
         room.currentDrawerIndex++;
 
-        // if all players finished drawing this round
         if (room.currentDrawerIndex >= room.drawerQueue.length) {
             room.currentDrawerIndex = 0;
             room.round++;
 
             if (room.round > room.maxRounds) {
                 room.state = ROOM_STATE.ROUND_ENDED;
-                return { room, gameEnded: true };
+
+                return {
+                    room,
+                    gameEnded: true,
+                };
             }
         }
 
         room.drawerId = room.drawerQueue[room.currentDrawerIndex]!;
+
         room.state = ROOM_STATE.WORD_SELECTION;
 
         room.word = null;
         room.wordOptions = this.getRandomWords(3);
+
         room.drawingHistory = [];
         room.guessedPlayers.clear();
         room.roundStartTime = null;

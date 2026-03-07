@@ -1,5 +1,7 @@
 import type {
     CanvasSyncPayload,
+    ChatMessageClientPayload,
+    ChatMessageServerPayload,
     CreateRoomPayload,
     DrawPayload,
     GameStartedPayload,
@@ -36,6 +38,7 @@ export enum CLIENT_EVENT_TYPE {
     CLEAR_CANVAS = 'CLEAR_CANVAS',
 
     SUBMIT_GUESS = 'SUBMIT_GUESS',
+    CHAT_MESSAGE = 'CHAT_MESSAGE',
 }
 
 export type ClientMessage =
@@ -47,7 +50,8 @@ export type ClientMessage =
     | { type: CLIENT_EVENT_TYPE.DRAW_STROKE; payload: DrawPayload }
     | { type: CLIENT_EVENT_TYPE.UNDO_STROKE; payload: {} }
     | { type: CLIENT_EVENT_TYPE.CLEAR_CANVAS; payload: {} }
-    | { type: CLIENT_EVENT_TYPE.SUBMIT_GUESS; payload: SubmitGuessPayload };
+    | { type: CLIENT_EVENT_TYPE.SUBMIT_GUESS; payload: SubmitGuessPayload }
+    | { type: CLIENT_EVENT_TYPE.CHAT_MESSAGE; payload: ChatMessageClientPayload };
 
 export enum SERVER_EVENT_TYPE {
     ROOM_CREATED = 'ROOM_CREATED',
@@ -66,6 +70,7 @@ export enum SERVER_EVENT_TYPE {
 
     ROUND_ENDED = 'ROUND_ENDED',
     SERVER_ERROR = 'SERVER_ERROR',
+    CHAT_MESSAGE = 'CHAT_MESSAGE',
 }
 
 export type ServerMessage =
@@ -81,4 +86,5 @@ export type ServerMessage =
     | { type: SERVER_EVENT_TYPE.SERVER_ERROR; payload: { message: string } }
     | { type: SERVER_EVENT_TYPE.CANVAS_SYNC; payload: CanvasSyncPayload }
     | { type: SERVER_EVENT_TYPE.ROUND_ENDED; payload: RoundEndedPayload }
-    | { type: SERVER_EVENT_TYPE.ROOM_STATE; payload: RoomStatePayload };
+    | { type: SERVER_EVENT_TYPE.ROOM_STATE; payload: RoomStatePayload }
+    | { type: SERVER_EVENT_TYPE.CHAT_MESSAGE; payload: ChatMessageServerPayload };

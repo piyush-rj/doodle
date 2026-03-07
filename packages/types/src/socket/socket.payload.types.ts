@@ -4,9 +4,11 @@ import type { ROOM_STATE, Stroke } from './room.types';
 // <--------------- CLIENT PAYLOAD TYPES --------------->
 export interface CreateRoomPayload {
     username: string;
+    sessionId: string;
 }
 
 export interface JoinRoomPayload {
+    sessionId: string;
     username: string;
     roomId: string;
 }
@@ -31,6 +33,10 @@ export interface SubmitGuessPayload {
 
 export interface SelectWordPayload {
     word: string;
+}
+
+export interface ChatMessageClientPayload {
+    message: string;
 }
 
 // <--------------- SERVER PAYLOAD TYPES --------------->
@@ -100,4 +106,12 @@ export interface RoomStatePayload {
     maxRounds: number;
     drawingHistory: Stroke[];
     roundStartTime: number | null;
+}
+
+export interface ChatMessageServerPayload {
+    playerId: string;
+    username: string;
+    correct: boolean;
+    score?: number;
+    message: string | null;
 }
