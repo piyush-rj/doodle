@@ -1,4 +1,4 @@
-# server
+# database
 
 To install dependencies:
 

@@ -1,4 +1,4 @@
-import type { CustomWebSocket } from '../../../../apps/server/src/types/socket_types';
+import type { CustomWebSocket } from '../../../../apps/backend/src/types/socket_types';
 
 export interface Player {
     id: string;

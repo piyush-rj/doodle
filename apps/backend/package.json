@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "backend",
   "module": "index.ts",
   "type": "module",
   "private": true,
@@ -9,16 +9,19 @@
   "peerDependencies": {
     "typescript": "^5"
   },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src",
+    "dev": "next dev --port 4444"
+  },
   "dependencies": {
-    "@doodle/database": "*",
     "@doodle/types": "*",
     "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/ws": "^8.18.1",
     "express": "^5.2.1",
     "ioredis": "^5.10.0",
-    "jsonwebtoken": "^9.0.3",
-    "ws": "^8.19.0",
-    "zod": "^4.3.6"
+    "uuid": "^13.0.0",
+    "ws": "^8.19.0"
   }
 }

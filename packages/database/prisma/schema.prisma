@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String    @id @default(cuid())
+  username   String
+  avatarUrl String
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+}
+
+model Game {
+  id        String     @id @default(cuid())
+
+  code      String     @unique
+  hostId    String
+  status    GameStatus @default(WAITING)
+
+  maxRounds Int        @default(3)
+  maxPlayers Int 
+  roundSecs Int        @default(80)
+
+  createdAt DateTime   @default(now())
+  startedAt DateTime?
+  endedAt   DateTime?
+}
+
+enum GameStatus {
+  WAITING
+  IN_PROGRESS
+  ENDED
+}
+
+model Word {
+  id         String     @id @default(cuid())
+  word       String     @unique
+  category   String     @default("general")
+  language   String     @default("en")
+  difficulty Difficulty @default(MEDIUM)
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
