@@ -10,24 +10,24 @@ datasource db {
 model User {
   id         String    @id @default(cuid())
   username   String
-  avatarUrl String
+  avatarUrl  String
   expiresAt  DateTime?
   createdAt  DateTime  @default(now())
   lastSeenAt DateTime  @default(now())
 }
 
 model Game {
-  id        String     @id @default(cuid())
+  id String @id @default(cuid())
 
-  code      String     @unique
-  hostId    String
-  status    GameStatus @default(WAITING)
+  code   String     @unique
+  hostId String
+  status GameStatus @default(WAITING)
 
-  maxRounds Int        @default(3)
-  maxPlayers Int 
-  roundSecs Int        @default(80)
+  maxRounds  Int @default(3)
+  maxPlayers Int
+  roundSecs  Int @default(80)
 
-  createdAt DateTime   @default(now())
+  createdAt DateTime  @default(now())
   startedAt DateTime?
   endedAt   DateTime?
 }
