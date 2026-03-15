@@ -10,7 +10,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@doodle/database": "*",
     "@doodle/types": "*",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",

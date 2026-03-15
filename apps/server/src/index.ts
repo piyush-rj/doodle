@@ -1,12 +1,9 @@
-import express from "express";
-import router from "./routes";
+import express from 'express';
 
 const app = express();
 
 app.use(express.json());
 
-app.use('/api/v1', router);
-
 app.listen(4444, () => {
     console.log('server runinng on port 4444');
-})
+});

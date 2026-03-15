@@ -1,10 +1,20 @@
-import z from "zod";
+import { DIFFICULTY_ENUM, GAME_STATE_ENUM } from "@doodle/types";
+import { z } from "zod";
 
-const create_room_schema = z.object({
-    username: z.string().min(1).max(30),
-    maxRounds: z.number().min(1).max(5).default(3),
-    maxPlayers: z.number().min(2).max(8),
-    roundSecs: z.number(),
+export const room_schema = z.object({
+    id: z.string(),
+    hostId: z.string(),
+    status: z.enum(GAME_STATE_ENUM),
+    currentDrawer: z.string(),
+    currentWord: z.string(),
+    currentRound: z.string().transform(Number),
+    totalRounds: z.string().transform(Number),
+    maxPlayers: z.string().transform(Number),
+    roundDuration: z.string().transform(Number),
+    roundEndsAt: z.string().transform(Number),
+    drawerTimeoutEndsAt: z.string().transform(Number),
+    difficulty: z.enum(DIFFICULTY_ENUM),
+    createdAt: z.string().transform(Number),
 });
 
-export default create_room_schema;  
+export default room_schema;
