@@ -1,7 +1,7 @@
-import type { WebSocket } from 'ws';
+import type { ServerWebSocket } from 'bun';
 
-export interface CustomWebSocket extends WebSocket {
-    id: string;
+export interface CustomWebSocket extends ServerWebSocket {
+    sessionId?: string;
     username?: string;
     roomId?: string;
 }

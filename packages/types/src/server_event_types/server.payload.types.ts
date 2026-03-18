@@ -1,5 +1,5 @@
-import type { Player, Room, Stroke } from "../game_types/game.types";
-import type { PLAYER_LEFT_REASON_ENUM } from "../game_types/game.enums";
+import type { Player, Room, Stroke } from '../game_types/game.types';
+import type { PLAYER_LEFT_REASON_ENUM } from '../game_types/game.enums';
 
 export interface SessionInitPayload {
     sessionId: string;
@@ -70,7 +70,6 @@ export interface GameEndedPayload {
     players: Player[]; // final leaderboard
 }
 
-
 // sent to drawer
 export interface WordOptionsPayload {
     words: string[];
@@ -103,19 +102,18 @@ export interface PlayerGuessedPayload {
 }
 
 export interface ScoreUpdatedPayload {
-    players: Player[];  // full updated player list with new scores
+    players: Player[]; // full updated player list with new scores
 }
-
 
 // Broadcast every ~5s to correct client-side timer drift
 export interface TimerSyncPayload {
-    timeRemaining: number;  // seconds
-    serverTime: number;     // epoch ms — lets client calculate local drift
+    timeRemaining: number; // seconds
+    serverTime: number; // epoch ms — lets client calculate local drift
 }
 
 // Sent when the round ends because time ran out (vs all players guessing)
 export interface TurnTimeoutPayload {
-    word: string;           // reveal the word on timeout
+    word: string; // reveal the word on timeout
 }
 
 export interface ServerChatMessagePayload {

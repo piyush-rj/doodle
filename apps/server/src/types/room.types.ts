@@ -1,4 +1,4 @@
-import type { DIFFICULTY_ENUM, GAME_STATE_ENUM } from "@doodle/types";
+import type { DIFFICULTY_ENUM, GAME_STATE_ENUM } from '@doodle/types';
 
 export interface RoomHash {
     id: string;

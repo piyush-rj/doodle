@@ -5,7 +5,7 @@ export const keys = {
     roomScores: (roomId: string) => `room:${roomId}:scores`,
     roomHistory: (roomId: string) => `room:${roomId}:history`,
     roomChannel: (roomId: string) => `pubsub:room:${roomId}`,
-    scheduled: `scheduled: events`
+    scheduled: `scheduled: events`,
 };
 
 export const TTL = {

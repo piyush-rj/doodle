@@ -1,5 +1,5 @@
-import type { Stroke } from "../game_types/game.types";
-import type { DIFFICULTY_ENUM } from "../game_types/game.enums";
+import type { Stroke } from '../game_types/game.types';
+import type { DIFFICULTY_ENUM } from '../game_types/game.enums';
 
 export interface CreateRoomPayload {
     username: string;
@@ -39,7 +39,7 @@ export interface ClearCanvasPayload {
 
 export interface UndoStrokePayload {
     roomId: string;
-    strokeId: string;           // id of the stroke to remove
+    strokeId: string; // id of the stroke to remove
 }
 
 export interface SubmitGuessPayload {
@@ -56,4 +56,3 @@ export interface ChatMessagePayload {
     roomId: string;
     message: string;
 }
-

@@ -1,5 +1,5 @@
-import { DIFFICULTY_ENUM, GAME_STATE_ENUM } from "@doodle/types";
-import { z } from "zod";
+import { DIFFICULTY_ENUM, GAME_STATE_ENUM } from '@doodle/types';
+import { z } from 'zod';
 
 export const room_schema = z.object({
     id: z.string(),
