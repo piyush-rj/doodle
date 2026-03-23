@@ -25,7 +25,7 @@ const decode = (raw: string): ScheduledEvent | null => {
     return null;
 };
 
-export const schedulerService = {
+const SchedulerService = {
     async schedule(event: ScheduledEvent, fireAt: number): Promise<void> {
         await redis_instance.zadd(keys.scheduled, fireAt, encode(event));
     },
@@ -45,3 +45,5 @@ export const schedulerService = {
         return raw.map(decode).filter(Boolean) as ScheduledEvent[];
     },
 };
+
+export default SchedulerService;

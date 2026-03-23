@@ -2,7 +2,6 @@ import { GAME_STATE_ENUM, type DIFFICULTY_ENUM, type Player, type Room } from '@
 import { redis_instance } from '../singleton/redis.singleton';
 import { keys, TTL } from '../consts/redis.keys';
 import { room_schema } from '../schemas/create_room_schema';
-import { xid } from 'zod';
 import SessionService from './SessionServices';
 
 export default class RoomServices {
@@ -28,6 +27,7 @@ export default class RoomServices {
                 roundDuration: input.roundDuration,
                 roundEndsAt: 0,
                 drawerTimeoutEndsAt: 0,
+                guessedPlayers: '',
                 difficulty: input.difficulty,
                 createdAt: Date.now(),
             })
@@ -54,19 +54,19 @@ export default class RoomServices {
         );
     }
 
-    static async addPlauyer(roomId: string, sessionId: string) {
+    static async addPlayer(roomId: string, sessionId: string) {
         await redis_instance
             .pipeline()
             .sadd(keys.roomPlayers(roomId), sessionId)
-            .zadd(keys.roomScores(roomId), 'NX', 0, sessionId) // nx -> dont overwrite if exists
+            .zadd(keys.roomScores(roomId), 'NX', 0, sessionId)
             .exec();
     }
 
-    static async removePlayer(roomId: string, sessionid: string) {
+    static async removePlayer(roomId: string, sessionId: string) {
         await redis_instance
             .pipeline()
-            .srem(keys.roomPlayers(roomId), sessionid)
-            .zrem(keys.roomScores(roomId), sessionid)
+            .srem(keys.roomPlayers(roomId), sessionId)
+            .zrem(keys.roomScores(roomId), sessionId)
             .exec();
     }
 
@@ -90,11 +90,34 @@ export default class RoomServices {
             '-inf',
             'WITHSCORES',
         );
-        const result = [];
+        const result: Array<{ sessionId: string; score: number }> = [];
         for (let i = 0; i < raw.length; i += 2) {
-            result.push({ sessionId: raw[i], score: Number(raw[i + 1]) });
+            const sessionId = raw[i];
+            const score = raw[i + 1];
+            if (!sessionId || !score) continue;
+            result.push({ sessionId, score: Number(score) });
         }
         return result;
+    }
+
+    static async addGuessedPlayer(roomId: string, sessionId: string) {
+        const room = await RoomServices.get(roomId);
+        if (!room) return;
+        const current = room.guessedPlayers ?? [];
+        await redis_instance.hset(
+            keys.room(roomId),
+            'guessedPlayers',
+            [...current, sessionId].join(','),
+        );
+    }
+
+    static async setWordOptions(roomId: string, words: string[]) {
+        await redis_instance.set(keys.roomWordOptions(roomId), JSON.stringify(words), 'EX', 30);
+    }
+
+    static async getWordOptions(roomId: string): Promise<string[] | null> {
+        const raw = await redis_instance.get(keys.roomWordOptions(roomId));
+        return raw ? (JSON.parse(raw) as string[]) : null;
     }
 
     static async startRound(
@@ -114,6 +137,7 @@ export default class RoomServices {
             currentRound: opts.roundNumber,
             roundEndsAt,
             drawerTimeoutEndsAt: 0,
+            guessedPlayers: '',
         });
         return roundEndsAt;
     }
@@ -158,7 +182,7 @@ export default class RoomServices {
         const filtered = all.filter((s) => {
             try {
                 return (JSON.parse(s) as { id: string }).id !== strokeId;
-            } catch (error) {
+            } catch {
                 return true;
             }
         });
@@ -169,7 +193,7 @@ export default class RoomServices {
             .exec();
     }
 
-    static async buildSnapshot(roomId: string) {
+    static async buildSnapshot(roomId: string): Promise<Room | null> {
         const hash = await RoomServices.get(roomId);
         if (!hash) return null;
 
@@ -186,13 +210,13 @@ export default class RoomServices {
                     username: session?.username ?? '',
                     score: scoreMap.get(sid) ?? 0,
                     isHost: hash.hostId === sid,
-                    hasGuessed: false,
+                    hasGuessed: (hash.guessedPlayers ?? []).includes(sid),
                     isConnected: session?.isConnected === true,
                 };
             }),
         );
 
-        const room: Room = {
+        return {
             id: hash.id,
             hostId: hash.hostId,
             maxPlayers: hash.maxPlayers,
@@ -200,7 +224,7 @@ export default class RoomServices {
             difficulty: hash.difficulty,
             createdAt: hash.createdAt,
             drawingHistory: history,
-            guessedPlayers: [],
+            guessedPlayers: hash.guessedPlayers ?? [],
             players,
             gameState: {
                 state: hash.status,
@@ -208,9 +232,8 @@ export default class RoomServices {
                 currentRound: hash.currentRound,
                 totalRounds: hash.totalRounds,
                 roundDuration: hash.roundDuration,
+                roundEndsAt: hash.roundEndsAt || undefined,
             },
         };
-
-        return room;
     }
 }

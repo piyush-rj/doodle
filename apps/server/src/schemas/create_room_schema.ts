@@ -15,6 +15,10 @@ export const room_schema = z.object({
     drawerTimeoutEndsAt: z.string().transform(Number),
     difficulty: z.enum(DIFFICULTY_ENUM),
     createdAt: z.string().transform(Number),
+    guessedPlayers: z
+        .string()
+        .transform((val) => (val ? val.split(',') : []))
+        .default([]),
 });
 
 export default room_schema;

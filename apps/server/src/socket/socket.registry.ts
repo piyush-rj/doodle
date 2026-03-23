@@ -27,4 +27,15 @@ export default class SocketRegistry {
             }),
         );
     }
+
+    static sendRaw(sessionId: string, data: string) {
+        const socket = this.sockets.get(sessionId);
+        if (socket?.readyState === WebSocket.OPEN) {
+            socket.send(data);
+        }
+    }
+
+    static all() {
+        return this.sockets.entries();
+    }
 }

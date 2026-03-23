@@ -24,13 +24,12 @@ export interface Player {
 
 export interface GameState {
     state: GAME_STATE_ENUM;
-
-    currentDrawer?: string; // session_id
+    currentDrawer?: string;
     currentRound: number;
-
     totalRounds: number;
     roundStartTime?: number;
     roundDuration?: number;
+    roundEndsAt?: number;
 }
 
 export interface Room {

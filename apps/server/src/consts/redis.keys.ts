@@ -5,10 +5,11 @@ export const keys = {
     roomScores: (roomId: string) => `room:${roomId}:scores`,
     roomHistory: (roomId: string) => `room:${roomId}:history`,
     roomChannel: (roomId: string) => `pubsub:room:${roomId}`,
-    scheduled: `scheduled: events`,
+    roomWordOptions: (roomId: string) => `room:${roomId}:wordOptions`,
+    scheduled: 'scheduled:events',
 };
 
 export const TTL = {
-    SESSION: 600, // 10min
-    ROOM: 7200, // 2hr
+    SESSION: 600, // 10 min
+    ROOM: 7200, // 2 hr
 };

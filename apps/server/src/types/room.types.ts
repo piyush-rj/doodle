@@ -11,6 +11,7 @@ export interface RoomHash {
     maxPlayers: number;
     roundDuration: number;
     roundEndsAt: number;
+    guessedPlayers: string[];
     drawerTimeoutEndsAt: number;
     difficulty: DIFFICULTY_ENUM;
     createdAt: number;

@@ -1,29 +1,29 @@
 import type { ServerEvent } from '@doodle/types';
-import {
-    publisher_instance,
-    redis_instance,
-    subscriber_instance,
-} from '../singleton/redis.singleton';
+import { publisher_instance, subscriber_instance } from '../singleton/redis.singleton';
 import { keys } from '../consts/redis.keys';
-
-type MessageHandler = (event: ServerEvent) => void;
+import SocketRegistry from '../socket/socket.registry';
 
 export default class PubSubService {
+    // forwards all pubsub messages to local sockets
+    static init() {
+        subscriber_instance.on('message', (channel, raw) => {
+            const match = channel.match(/^pubsub:room:(.+)$/);
+            if (!match) return;
+            const roomId = match[1];
+            const event = JSON.parse(raw) as ServerEvent;
+
+            for (const [sessionId, ws] of SocketRegistry.all()) {
+                if (ws.roomId === roomId) ws.send(JSON.stringify(event));
+            }
+        });
+    }
+
     static async publish(roomId: string, event: ServerEvent) {
         await publisher_instance.publish(keys.roomChannel(roomId), JSON.stringify(event));
     }
 
-    static async subscribe(roomId: string, onMessage: MessageHandler) {
+    static async subscribe(roomId: string) {
         await subscriber_instance.subscribe(keys.roomChannel(roomId));
-        subscriber_instance.on('message', (channel, raw) => {
-            if (channel !== keys.roomChannel(roomId)) return;
-
-            try {
-                onMessage(JSON.parse(raw) as ServerEvent);
-            } catch (error) {
-                console.error('Failed to parse subscibrer msg');
-            }
-        });
     }
 
     static async unsubscribe(roomId: string) {
