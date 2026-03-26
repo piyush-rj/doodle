@@ -1,21 +1,21 @@
-import { ClientMessage, SERVER_EVENT_TYPE, ServerMessage } from '@doodle/types';
+import { ClientEvent, SERVER_EVENT_ENUM, ServerEvent } from '@doodle/types';
 
 type Listener = (payload: unknown) => void;
 
 export default class WebSocketClient {
     private ws: WebSocket | null = null;
     private url: string;
-    private listeners: Map<SERVER_EVENT_TYPE, Listener[]> = new Map();
+    private listeners: Map<SERVER_EVENT_ENUM, Listener[]> = new Map();
     private reconnectAttempts: number = 0;
     private reconnectDelay: number = 1000;
     private maxReconnectAttempts: number = 5;
     private reconnectTimeout: NodeJS.Timeout | null = null;
     private maxReconnectDelay: number = 10000;
     private persistentReconnectDelay: number = 5000;
-    private messageQueue: ClientMessage[] = [];
+    private messageQueue: ClientEvent[] = [];
     private manualClose: boolean = false;
     private isConnected: boolean = false;
-    private reconnectPayload: ClientMessage | null = null;
+    private reconnectPayload: ClientEvent | null = null;
 
     constructor(url: string) {
         this.url = url;
@@ -48,7 +48,7 @@ export default class WebSocketClient {
 
         this.ws.onmessage = (event: MessageEvent<string>) => {
             try {
-                const parsed: ServerMessage = JSON.parse(event.data);
+                const parsed: ServerEvent = JSON.parse(event.data);
                 this.handleIncomingMessage(parsed);
             } catch (error) {
                 console.error('Inavlid ws message: ', error);
@@ -71,7 +71,7 @@ export default class WebSocketClient {
         };
     }
 
-    public handleIncomingMessage(parsedMessage: ServerMessage) {
+    public handleIncomingMessage(parsedMessage: ServerEvent) {
         try {
             const { type, payload } = parsedMessage;
             const handlers = this.listeners.get(type);
@@ -85,7 +85,7 @@ export default class WebSocketClient {
         }
     }
 
-    public subscribeTohandlers(eventType: SERVER_EVENT_TYPE, handler: Listener) {
+    public subscribeTohandlers(eventType: SERVER_EVENT_ENUM, handler: Listener) {
         try {
             if (!this.listeners.has(eventType)) {
                 this.listeners.set(eventType, []);
@@ -99,7 +99,7 @@ export default class WebSocketClient {
         }
     }
 
-    public unsubscribeToHandler(eventType: SERVER_EVENT_TYPE, handler: Listener) {
+    public unsubscribeToHandler(eventType: SERVER_EVENT_ENUM, handler: Listener) {
         try {
             const handlers = this.listeners.get(eventType);
             if (!handlers) return;
@@ -144,7 +144,7 @@ export default class WebSocketClient {
         }
     }
 
-    public sendMessage(message: ClientMessage) {
+    public sendMessage(message: ClientEvent) {
         try {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                 this.ws.send(JSON.stringify(message));
@@ -195,7 +195,7 @@ export default class WebSocketClient {
         }
     }
 
-    public setReconnectPayload(payload: ClientMessage) {
+    public setReconnectPayload(payload: ClientEvent) {
         this.reconnectPayload = payload;
     }
 
